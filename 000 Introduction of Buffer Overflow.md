@@ -20,8 +20,8 @@ int main(void)
 
 ---
 ## Explaination of Code
-According to the code, a character array variable called "buffer" that had 16 bytes of storage was defined.
-Not only that, the program is using `gets()` function, which is a vunerable function in C programming language.
+According to the code, a character array variable called *"buffer"* that had 16 bytes of storage was defined.
+Not only that, the program is using `gets()` function, which is a vunerable function in **C programming language**.
 
 Here is the description in manual of `man` command.
 ```bash
@@ -45,6 +45,13 @@ BUGS
 ```bash
 $ gcc vuln.c -o vuln -fno-stack-protector -z execstack -no-pie -m32
 ```
+Command Explaination:
+1. `gcc` = Invoke **GNU C/C++ compiler**.
+2. `vuln.c` = **Source file** to compile.
+3. `-o vuln` = Specify the name of **output file**.
+4. `-fno-stack-protector` = Option to **disable stack protection mechanisms**, which is used for *stack buffer overflows prevention*.
+5. `-z execstack` = Option to marks the stack as **executable**.
+
 
 #### Output
 ```text
