@@ -51,7 +51,8 @@ Command Explaination:
 3. `-o vuln` = Specify the name of **output file**.
 4. `-fno-stack-protector` = Option to **disable stack protection mechanisms**, which is used for *stack buffer overflows prevention*.
 5. `-z execstack` = Option to marks the stack as **executable**.
-
+6. `-no-pie` = Option to produce a **non-Position Independent Executable (non-PIE)** in a compiler. PIE are designed to *load program at random memory addressess* to make attackers harder to predict the location of payload execution.
+7. `-m32` = Option to instructs compiler to generate a **32-bit executable binary file**.
 
 #### Output
 ```text
@@ -81,6 +82,15 @@ $ checksec vuln
     RWX:        Has RWX segments
     Stripped:   No
 ```
+Output Explaination:
+* `Arch:i386-32-little` = The **Intel 32-bit architecture binary**, *little* refers to the endianness.
+* `RELRO:Partial RELRO` = RELocation Read-Only makes **certain sections of memory read-only after initialized**. *Partial RELRO* means some sections of the binary are protected.
+* `Stack:No canary found` = The binary does not use **stack canaries**, which are security mechanisms designed to *detect stack buffer overflows*.
+* `NX:NX unknown - GNU_STACK missing` = **No eXecute (NX)** marks certain areas of memory as **non-executable**, *unknown* due to `GNU_STACK` section is missing.
+* `PIE:No PIE (0x8048000)` = Position Independent Executable (PIE) allows executables to loaded at **random memory addresses**, *No PIE* means the binary is not position-independent, *0x8048000* is fixed base address that refers to a specific memory address at which a binary is loaded into memory when it is executed.
+* `Stack:Executable` = Stack is marked as **executable**, means attackers can execute code that is placed on the stack, this is a *requirement for exploiting buffer overflow vulnerabilities*.
+* `RWX:Has RWX segments` = The segments memory of binary are both **readable, writable, and executable (RWX)**.
+* `Stripped:No` = The binary is **not stripped**, means it *contains symbol information* (such as function names and variable names). 
 
 ### Check File Type
 ```bash
