@@ -87,7 +87,7 @@ Output Explaination:
 * `RELRO:Partial RELRO` = RELocation Read-Only makes **certain sections of memory read-only after initialized**. *Partial RELRO* means some sections of the binary are protected.
 * `Stack:No canary found` = The binary does not use **stack canaries**, which are security mechanisms designed to *detect stack buffer overflows*.
 * `NX:NX unknown - GNU_STACK missing` = **No eXecute (NX)** marks certain areas of memory as **non-executable**, *unknown* due to `GNU_STACK` section is missing.
-* `PIE:No PIE (0x8048000)` = Position Independent Executable (PIE) allows executables to loaded at **random memory addresses**, *No PIE* means the binary is not position-independent, *0x8048000* is fixed base address that refers to a specific memory address at which a binary is loaded into memory when it is executed.
+* `PIE:No PIE (0x8048000)` = Position Independent Executable (PIE) allows executables to loaded at **random memory addresses**, *No PIE* means the binary is not position-independent, *0x8048000* is **fixed base address** that refers to a specific memory address at which a binary is loaded into memory when it is executed.
 * `Stack:Executable` = Stack is marked as **executable**, means attackers can execute code that is placed on the stack, this is a *requirement for exploiting buffer overflow vulnerabilities*.
 * `RWX:Has RWX segments` = The segments memory of binary are both **readable, writable, and executable (RWX)**.
 * `Stripped:No` = The binary is **not stripped**, means it *contains symbol information* (such as function names and variable names). 
@@ -103,6 +103,19 @@ vuln: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV),
 dynamically linked, interpreter /lib/ld-linux.so.2, BuildID[sha1]=2ada1af7d9dcfe5a160f4b68c26d1b90bd0c427b,
 for GNU/Linux 3.2.0, not stripped
 ```
+Output Explaination:
+* `vuln` = **Name** of analyzed file.
+* `ELF 32-bit LSB executable`:
+    * `ELF` = **Executable and Linkable Format**, common standard file format for executables, object code, shared libraries, and core dumps in Unix-like operating system.
+    * `32-bit` = The executable is compiled for a **32-bit architecture**.
+    * `LSB` = **Least Significant Byte first**, indicates the *endianness of the binary*. LSB means the least significant byte is stored first in memory, typical for **Intel architectures**.
+* `Intel 80386` = Specify the **target architecture** for the binary was compiled. The Intel 80386 is a **32-bit microprocessor**, and indicates the binary is intended to run on **x86 architecture**.
+* `version 1 (SYSV)` = Indicates the **version of ELF** specification. SYSV refers to **System V ABI (Application Binary Interface)**, a standard for binary compatibility.
+* `dynamically linked` = The binary file is **linked to shared libraries** at *runtime* rather than being statically linked. This allows the program to use shared code from libraries, which can *save memory and disk space*.
+* `interpreter /lib/ld-linux.so.2` = Specify the **dynamic linker/loader** that will be used to *load the binary file into memory* and **link with the necessary shared libraries**. The `/lib/ld-linux.so.2` is the library for 32-bit binaries on Linux.
+* `BuildID[sha1]=2ada1af7d9dcfe5a160f4b68c26d1b90bd0c427b` = A **unique identifier** for the build of binary file, represented as **SHA-1 hash**.
+* `for GNU/Linux 3.2.0` = Indicates the binary file is intended to **run on the GNU/Linux operating system**, *version 3.2.0 or later*.
+* `not stripped` = The binary file contains **all of the symbol information**, includes function names, variable names, and debugging information. A **stripped** binary will *remove these information for reducing the size* and make *reverse engineering more difficult*.
 
 ### Gain Privilege
 ```bash
