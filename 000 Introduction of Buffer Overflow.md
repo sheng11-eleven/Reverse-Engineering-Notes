@@ -151,3 +151,261 @@ AAAAAAAAAAAAAAAA
 Segmentation fault
 ```
 
+## Analysis
+### PwnGDB Analysis
+```bash
+$ gdb vuln
+```
+
+#### Output
+```text
+GNU gdb (Ubuntu 12.1-0ubuntu1~22.04.2) 12.1
+Copyright (C) 2022 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<https://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+pwndbg: loaded 177 pwndbg commands and 47 shell commands. Type pwndbg [--shell | --all] [filter] for a list.
+pwndbg: created $rebase, $base, $hex2ptr, $argv, $envp, $argc, $environ, $bn_sym, $bn_var, $bn_eval, $ida GDB functions (can be used with print/break)
+Reading symbols from vuln...
+(No debugging symbols found in vuln)
+------- tip of the day (disable with set show-tips off) -------
+Use GDB's dprintf command to print all calls to given function. E.g. dprintf malloc, "malloc(%p)\n", (void*)$rdi will print all malloc calls
+pwndbg>
+```
+
+### Check Function
+```bash
+pwndbg> info functions
+```
+
+#### Output
+```text
+All defined functions:
+
+Non-debugging symbols:
+0x08049000  _init
+0x08049040  __libc_start_main@plt
+0x08049050  gets@plt
+0x08049060  puts@plt
+0x08049070  _start
+0x080490b0  _dl_relocate_static_pie
+0x080490c0  __x86.get_pc_thunk.bx
+0x080490d0  deregister_tm_clones
+0x08049110  register_tm_clones
+0x08049150  __do_global_dtors_aux
+0x08049180  frame_dummy
+0x08049186  main
+0x080491d4  _fini
+```
+
+### Disassembly Main Function
+```bash
+pwndbg> disassembly main
+```
+
+#### Output
+```text
+Dump of assembler code for function main:
+   0x08049186 <+0>:     lea    ecx,[esp+0x4]
+   0x0804918a <+4>:     and    esp,0xfffffff0
+   0x0804918d <+7>:     push   DWORD PTR [ecx-0x4]
+   0x08049190 <+10>:    push   ebp
+   0x08049191 <+11>:    mov    ebp,esp
+   0x08049193 <+13>:    push   ebx
+   0x08049194 <+14>:    push   ecx
+   0x08049195 <+15>:    sub    esp,0x10
+   0x08049198 <+18>:    call   0x80490c0 <__x86.get_pc_thunk.bx>
+   0x0804919d <+23>:    add    ebx,0x2e63
+   0x080491a3 <+29>:    sub    esp,0xc
+   0x080491a6 <+32>:    lea    eax,[ebx-0x1ff8]
+   0x080491ac <+38>:    push   eax
+   0x080491ad <+39>:    call   0x8049060 <puts@plt>
+   0x080491b2 <+44>:    add    esp,0x10
+   0x080491b5 <+47>:    sub    esp,0xc
+   0x080491b8 <+50>:    lea    eax,[ebp-0x18]
+   0x080491bb <+53>:    push   eax
+   0x080491bc <+54>:    call   0x8049050 <gets@plt>
+   0x080491c1 <+59>:    add    esp,0x10
+   0x080491c4 <+62>:    mov    eax,0x0
+   0x080491c9 <+67>:    lea    esp,[ebp-0x8]
+   0x080491cc <+70>:    pop    ecx
+   0x080491cd <+71>:    pop    ebx
+   0x080491ce <+72>:    pop    ebp
+   0x080491cf <+73>:    lea    esp,[ecx-0x4]
+   0x080491d2 <+76>:    ret
+End of assembler dump.
+```
+
+### Set Breakpoint at Main
+```bash
+pwndbg> break main
+```
+
+#### Output
+```text
+Breakpoint 1 at 0x8049195
+```
+
+### Run
+```bash
+pwndbg> run
+```
+
+#### Output
+```text
+Starting program: /home/s/Binary-Exploitation-Notes/000_Introduction_of_Buffer_Overflow/vuln
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, 0x08049195 in main ()
+LEGEND: STACK | HEAP | CODE | DATA | WX | RODATA
+─────────────────────────────────[ REGISTERS / show-flags off / show-compact-regs off ]─────────────────────────────────
+ EAX  0x8049186 (main) ◂— lea ecx, [esp + 4]
+ EBX  0xf7fa8000 (_GLOBAL_OFFSET_TABLE_) ◂— 0x229dac
+ ECX  0xffffccd0 ◂— 1
+ EDX  0xffffccf0 —▸ 0xf7fa8000 (_GLOBAL_OFFSET_TABLE_) ◂— 0x229dac
+ EDI  0xf7ffcb80 (_rtld_global_ro) ◂— 0
+ ESI  0xffffcd84 —▸ 0xffffced4 ◂— '/home/s/Binary-Exploitation-Notes/000_Introduction_of_Buffer_Overflow/vuln'
+ EBP  0xffffccb8 —▸ 0xf7ffd020 (_rtld_global) —▸ 0xf7ffda40 ◂— 0
+ ESP  0xffffccb0 —▸ 0xffffccd0 ◂— 1
+ EIP  0x8049195 (main+15) ◂— sub esp, 0x10
+───────────────────────────────────────────[ DISASM / i386 / set emulate on ]───────────────────────────────────────────
+ ► 0x8049195 <main+15>    sub    esp, 0x10     ESP => 0xffffcca0 (0xffffccb0 - 0x10)
+   0x8049198 <main+18>    call   __x86.get_pc_thunk.bx       <__x86.get_pc_thunk.bx>
+
+   0x804919d <main+23>    add    ebx, 0x2e63
+   0x80491a3 <main+29>    sub    esp, 0xc
+   0x80491a6 <main+32>    lea    eax, [ebx - 0x1ff8]
+   0x80491ac <main+38>    push   eax
+   0x80491ad <main+39>    call   puts@plt                    <puts@plt>
+
+   0x80491b2 <main+44>    add    esp, 0x10
+   0x80491b5 <main+47>    sub    esp, 0xc
+   0x80491b8 <main+50>    lea    eax, [ebp - 0x18]
+   0x80491bb <main+53>    push   eax
+───────────────────────────────────────────────────────[ STACK ]────────────────────────────────────────────────────────
+00:0000│ esp 0xffffccb0 —▸ 0xffffccd0 ◂— 1
+01:0004│-004 0xffffccb4 —▸ 0xf7fa8000 (_GLOBAL_OFFSET_TABLE_) ◂— 0x229dac
+02:0008│ ebp 0xffffccb8 —▸ 0xf7ffd020 (_rtld_global) —▸ 0xf7ffda40 ◂— 0
+03:000c│+004 0xffffccbc —▸ 0xf7d9f519 (__libc_start_call_main+121) ◂— add esp, 0x10
+04:0010│+008 0xffffccc0 —▸ 0xffffced4 ◂— '/home/s/Binary-Exploitation-Notes/000_Introduction_of_Buffer_Overflow/vuln'
+05:0014│+00c 0xffffccc4 ◂— 0x70 /* 'p' */
+06:0018│+010 0xffffccc8 —▸ 0xf7ffd000 (_GLOBAL_OFFSET_TABLE_) ◂— 0x36f2c
+07:001c│+014 0xffffcccc —▸ 0xf7d9f519 (__libc_start_call_main+121) ◂— add esp, 0x10
+─────────────────────────────────────────────────────[ BACKTRACE ]──────────────────────────────────────────────────────
+ ► 0 0x8049195 main+15
+   1 0xf7d9f519 __libc_start_call_main+121
+   2 0xf7d9f5f3 __libc_start_main+147
+   3 0x804909c _start+44
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+```
+
+### Line-by-line Checking
+```bash
+pwndbg> n
+```
+
+### Continue
+```bash
+pwndbg> c
+```
+
+#### Output
+```text
+Continuing.
+Give me data plz:
+AAAAAAAAAAAAAAA
+[Inferior 1 (process 3638) exited normally]
+```
+
+### Delete Breakpoint
+```bash
+pwndbg> delete breakpoint
+```
+
+### Perform Buffer Overflow
+```bash
+pwndbg> run
+Starting program: /home/s/Binary-Exploitation-Notes/000_Introduction_of_Buffer_Overflow/vuln
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+Give me data plz:
+AAAAAAAAAAAAAAAAAAAA
+```
+
+#### Output
+```text
+Program received signal SIGSEGV, Segmentation fault.
+0x080491d2 in main ()
+LEGEND: STACK | HEAP | CODE | DATA | WX | RODATA
+──────────────────────────────────────────────────────────────[ REGISTERS / show-flags off / show-compact-regs off ]───────────────────────────────────────────────────────────────
+ EAX  0
+ EBX  0xf7fa8000 (_GLOBAL_OFFSET_TABLE_) ◂— 0x229dac
+ ECX  0x41414141 ('AAAA')
+ EDX  1
+ EDI  0xf7ffcb80 (_rtld_global_ro) ◂— 0
+ ESI  0xffffcd84 —▸ 0xffffced4 ◂— '/home/s/Binary-Exploitation-Notes/000_Introduction_of_Buffer_Overflow/vuln'
+ EBP  0xf7ffd020 (_rtld_global) —▸ 0xf7ffda40 ◂— 0
+ ESP  0x4141413d ('=AAA')
+ EIP  0x80491d2 (main+76) ◂— ret
+────────────────────────────────────────────────────────────────────────[ DISASM / i386 / set emulate on ]─────────────────────────────────────────────────────────────────────────
+ ► 0x80491d2 <main+76>    ret
+
+   0x80491d3              add    bl, dh
+
+
+
+
+
+
+
+
+─────────────────────────────────────────────────────────────────────────────────────[ STACK ]─────────────────────────────────────────────────────────────────────────────────────
+<Could not read memory at 0x4141413d>
+───────────────────────────────────────────────────────────────────────────────────[ BACKTRACE ]───────────────────────────────────────────────────────────────────────────────────
+ ► 0 0x80491d2 main+76
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+pwndbg>
+```
+
+### Evaluate Stack Pointer
+```bash
+info stack
+```
+
+#### Output
+```text
+#0  0x080491d2 in main ()
+Backtrace stopped: Cannot access memory at address 0x4141413d
+```
+
+### Ghidra Analysis
+```bash
+ghidra
+```
+
+#### Output
+![image](https://github.com/user-attachments/assets/ecae2c8f-a370-4ace-87b2-280c65173c7c)
+![image](https://github.com/user-attachments/assets/3905b4cd-a9d8-4655-8570-a024665591e9)
+![image](https://github.com/user-attachments/assets/c291c878-1685-44d0-a51d-1af21f1cd7ba)
+
+### Rename Variable
+```bash
+Press l 
+```
+
+#### Output
+![image](https://github.com/user-attachments/assets/d196fc82-671c-49c7-88ce-36f0e9bbf652)
+
+### Details of Main Function
+![image](https://github.com/user-attachments/assets/2fec4848-8660-4809-8a90-19aeaf02d368)
