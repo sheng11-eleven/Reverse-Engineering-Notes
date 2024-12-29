@@ -219,30 +219,30 @@ Dump of assembler code for function main:
    0x08049186 <+0>:     lea    ecx,[esp+0x4]
    0x0804918a <+4>:     and    esp,0xfffffff0
    0x0804918d <+7>:     push   DWORD PTR [ecx-0x4]
-   0x08049190 <+10>:    push   ebp
-   0x08049191 <+11>:    mov    ebp,esp
-   0x08049193 <+13>:    push   ebx
-   0x08049194 <+14>:    push   ecx
-   0x08049195 <+15>:    sub    esp,0x10
-   0x08049198 <+18>:    call   0x80490c0 <__x86.get_pc_thunk.bx>
-   0x0804919d <+23>:    add    ebx,0x2e63
-   0x080491a3 <+29>:    sub    esp,0xc
-   0x080491a6 <+32>:    lea    eax,[ebx-0x1ff8]
-   0x080491ac <+38>:    push   eax
-   0x080491ad <+39>:    call   0x8049060 <puts@plt>
-   0x080491b2 <+44>:    add    esp,0x10
-   0x080491b5 <+47>:    sub    esp,0xc
-   0x080491b8 <+50>:    lea    eax,[ebp-0x18]
-   0x080491bb <+53>:    push   eax
-   0x080491bc <+54>:    call   0x8049050 <gets@plt>
-   0x080491c1 <+59>:    add    esp,0x10
-   0x080491c4 <+62>:    mov    eax,0x0
-   0x080491c9 <+67>:    lea    esp,[ebp-0x8]
-   0x080491cc <+70>:    pop    ecx
-   0x080491cd <+71>:    pop    ebx
-   0x080491ce <+72>:    pop    ebp
-   0x080491cf <+73>:    lea    esp,[ecx-0x4]
-   0x080491d2 <+76>:    ret
+   0x08049190 <+10>:    push   ebp                                    // Save old base pointer
+   0x08049191 <+11>:    mov    ebp,esp                                // Set new base pointer to stack pointer
+   0x08049193 <+13>:    push   ebx                                    // Save ebx register
+   0x08049194 <+14>:    push   ecx                                    // Save ecx register
+   0x08049195 <+15>:    sub    esp,0x10                               // Allocate 16 bytes on the stack (buffer array variable)
+   0x08049198 <+18>:    call   0x80490c0 <__x86.get_pc_thunk.bx>      // Get current Program Counter (PC)
+   0x0804919d <+23>:    add    ebx,0x2e63                             // Adjust the value in ebx by adding an offset, string to be printed is stored
+   0x080491a3 <+29>:    sub    esp,0xc                                // Allocate 12 bytes on the stack
+   0x080491a6 <+32>:    lea    eax,[ebx-0x1ff8]                       // Lot the address of string
+   0x080491ac <+38>:    push   eax                                    // Push the address of string to the stack
+   0x080491ad <+39>:    call   0x8049060 <puts@plt>                   // Print the string
+   0x080491b2 <+44>:    add    esp,0x10                               // Clean up the stack by adjusting the stack pointer
+   0x080491b5 <+47>:    sub    esp,0xc                                // Allocates 12 bytes of space on the stack
+   0x080491b8 <+50>:    lea    eax,[ebp-0x18]                         // (Load Effective Address) instruction loads the address of the local variable (or buffer) into the eax register
+   0x080491bb <+53>:    push   eax                                    // Pushes the address of the buffer onto the stack.
+   0x080491bc <+54>:    call   0x8049050 <gets@plt>                   // Call gets() function
+   0x080491c1 <+59>:    add    esp,0x10                               // Clean up the stack pointer
+   0x080491c4 <+62>:    mov    eax,0x0                                // Set 0 to eax
+   0x080491c9 <+67>:    lea    esp,[ebp-0x8]                          // Adjust the stack pointer esp back to the location of the base pointer minus 8 bytes
+   0x080491cc <+70>:    pop    ecx                                    // Clean up
+   0x080491cd <+71>:    pop    ebx                                    // Clean up
+   0x080491ce <+72>:    pop    ebp                                    // Clean up
+   0x080491cf <+73>:    lea    esp,[ecx-0x4]                          // Adjusts the stack pointer esp to point to the address stored in ecx minus 4 bytes
+   0x080491d2 <+76>:    ret                                           // Return from the function
 End of assembler dump.
 ```
 
