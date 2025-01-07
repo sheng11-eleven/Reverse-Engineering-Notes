@@ -70,4 +70,6 @@ checksec vuln
     Stripped:   No
 ```
 
-#### Short Explaination
+### Short Explaination
+
+1. `Stack: No canary found` is based on the command `-fno-stack-protector`, which
