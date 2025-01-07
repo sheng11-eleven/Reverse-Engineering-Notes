@@ -36,6 +36,8 @@ int main(void)
 }
 ```
 
+---
+
 ## Compile
 ```bash
 gcc vuln.c -o vuln -fno-stack-protector -z execstack -no-pie -m32
@@ -72,4 +74,65 @@ checksec vuln
 
 ### Short Explaination
 
-1. `Stack: No canary found` is based on the command `-fno-stack-protector`, which
+1. `Stack: No canary found` is based on the command `-fno-stack-protector`, which is disable the security mechanism to detect stake overflow.
+2. `NX: NX unknown - GNU_STACK missing` is based on the command `-z execstack`, which is doesn't marks certain area of memory as non-executable.
+3. `PIE: No PIE (0x8048000)` is based on the command `-no-pie`, which is not load in the memory randomly, but follow the memory address `(0x8048000)`.
+
+---
+
+## Program Investigate
+
+### Run
+```bash
+./vuln
+```
+
+#### Output
+```text
+Enter admin password:
+aaaaaa
+Incorrect Password!
+Failed to log in as Admin (authorised=0) :(
+```
+
+Based on the output, the program need user to enter the admininistrator password. The user try using **"aaaaaa"**, and the password is error. Now, try with a tools called **"ltrace"** to identify what going on for the program while running.
+
+### Run with ltrace
+```bash
+ltrace ./vuln
+```
+
+#### Output
+```text
+__libc_start_main(0x80491a6, 1, 0xffc99424, 0 <unfinished ...>
+puts("Enter admin password: "Enter admin password:
+)                                            = 23
+gets(0xffc99346, 0xf7f71f90, 0xf7d314be, 0x80491bdtest
+)                       = 0xffc99346
+strcmp("test", "pass")                                                    = 1
+puts("Incorrect Password!"Incorrect Password!
+)                                               = 20
+printf("Failed to log in as Admin (autho"..., 0Failed to log in as Admin (authorised=0) :(
+)                          = 44
++++ exited (status 0) +++
+```
+
+Based on the output of `ltrace`, the program is compare the **"test"** strings with **"pass"**, if incorrect then print **"Incorrect Password!"** and **"Failed to log in as Admin (authorised=0) :("**.
+
+### Run with ltrace Again (Output)
+```
+__libc_start_main(0x80491a6, 1, 0xffa8c2c4, 0 <unfinished ...>
+puts("Enter admin password: "Enter admin password:
+)                                            = 23
+gets(0xffa8c1e6, 0xf7f53f90, 0xf7d134be, 0x80491bdpass
+)                       = 0xffa8c1e6
+strcmp("pass", "pass")                                                    = 0
+puts("Correct Password!"Correct Password!
+)                                                 = 18
+printf("Successfully logged in as Admin "..., 1Successfully logged in as Admin (authorised=1) :)
+)                          = 50
++++ exited (status 0) +++
+```
+
+Now based on the output of `ltrace`, the program is compare the **"pass"** strings with **"pass"**, it will print **"Correct Password!"** and **"Successfully logged in as Admin (authorised=1) :)"**.
+
