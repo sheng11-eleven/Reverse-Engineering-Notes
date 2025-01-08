@@ -136,3 +136,33 @@ printf("Successfully logged in as Admin "..., 1Successfully logged in as Admin (
 
 Now based on the output of `ltrace`, the program is compare the **"pass"** strings with **"pass"**, it will print **"Correct Password!"** and **"Successfully logged in as Admin (authorised=1) :)"**.
 
+## Buffer Overflow
+```bash
+./vuln
+```
+
+### Output
+```
+Enter admin password:
+AAAAAAA
+Incorrect Password!
+Successfully logged in as Admin (authorised=65) :)
+```
+
+After we flow the **7** character **"A"** to the program, even the password is wrong but it still success to login as a Admin, and the `authorised` variable is overwrite to the ASCII character **"A"** code, which is represent in Decimal form.
+
+## Code Analyzing
+```c
+#include <stdio.h>
+#include <string.h>
+
+int main(void)
+{
+    char password[6];
+    int authorised = 0;
+
+    printf("Enter admin password: \n");
+    gets(password);
+```
+
+The `gets()` function is the vulnerability, because it doesn't check the size of getting string to pass to the variable, `password` which only have 6 bytes capability. If the size of input strings is over 6 bytes, it will overflow to next stack, which is `authorised` because of the `authorised` is declare after the `password` in the stack.
